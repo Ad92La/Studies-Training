@@ -17,7 +17,7 @@
 
 
 // How many threads should be used
-#define  THREAD_COUNT     16
+#define  THREAD_COUNT     2
 
 
 // The number of measurements used to calculate the average execution time
@@ -34,8 +34,8 @@
 //#define  ITERATION_COUNT  20
 //#define  MATRIX_SIZE      25000
 
-//#define  ITERATION_COUNT  500
-//#define  MATRIX_SIZE      5000
+#define  ITERATION_COUNT  500
+#define  MATRIX_SIZE      5000
 
 //#define  ITERATION_COUNT  2000
 //#define  MATRIX_SIZE      2500
@@ -46,8 +46,8 @@
 //#define  ITERATION_COUNT  50000
 //#define  MATRIX_SIZE      500
 
-#define  ITERATION_COUNT  800000
-#define  MATRIX_SIZE      125
+//#define  ITERATION_COUNT  800000
+//#define  MATRIX_SIZE      125
 
 
 
