@@ -1,0 +1,1 @@
+These Examples are for testing purposes to plot the SpeedUp and the Efficiency with different parameters
