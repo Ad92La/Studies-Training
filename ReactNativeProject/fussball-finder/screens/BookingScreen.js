@@ -42,7 +42,7 @@ function BookingScreen({route}) {
         MailComposer.composeAsync({
             subject: subject,
             body: body,
-            recipients: ['a.ladner@gmx.net'],
+            recipients: ['max.muster@gmail.com'],
         })
     }
 
