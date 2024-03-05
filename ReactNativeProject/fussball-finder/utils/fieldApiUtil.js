@@ -1,4 +1,4 @@
-const basePath = 'https://fussball-finder-default-rtdb.europe-west1.firebasedatabase.app';
+const basePath = 'https://.Your.Database.Link.Here.firebasedatabase.app';
 
 import { dummyFootballFields } from "../Navigation/DummyData";
 
