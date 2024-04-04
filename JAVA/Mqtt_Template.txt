@@ -1,5 +1,10 @@
-Das Programm ist ausgelegt auf einen Einzigen Kommandozeilen Parameter der übergeben wird. EINE GANZZAHL!
 
+//Template mit Anweisungen für Intellij Ultimate
+
+//Das Programm ist ausgelegt auf einen Einzigen Kommandozeilen Parameter der übergeben wird. EINE GANZZAHL!
+
+//Generiert mit eigenem Template von mir, sollten Kommentare unklar sein sind sie noch überbleibsel vom
+//Template, zur orientierung an welchen stellen was gemacht oder eingefügt werden soll.
 
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
@@ -11,22 +16,22 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 //File -> Project Structure -> Librarys -> + -> From Maven... -> org.eclipse.paho eingeben -> Lupe klicken ->
 // folgendes Auswählen: 'org.eclipse.paho.client.mqttv3' - Version 1.2.5
 
-//Anpassung für das build.gradle file:
-//dependencies {
-  //  testImplementation(platform("org.junit:junit-bom:5.9.1"))
-    //testImplementation("org.junit.jupiter:junit-jupiter")
-    //testImplementation ("org.junit.jupiter:junit-jupiter-api:5.5.2")
-    //testRuntimeOnly ("org.junit.jupiter:junit-jupiter-engine:5.5.2")
-    //testImplementation ("org.hamcrest:hamcrest-library:2.1")
-    //implementation ("org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.5")
-//}
+//For the build dependencies
+//testImplementation ("org.junit.jupiter:junit-jupiter-api:5.5.2")
+//        testRuntimeOnly ("org.junit.jupiter:junit-jupiter-engine:5.5.2")
+//        testImplementation ("org.hamcrest:hamcrest-library:2.1")
+//        implementation ("org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.5")
 
 
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 
 import static java.lang.Thread.sleep;
 
 class MyProgram implements MqttCallback {
+
+    //Erstellen der Klasse für einen MQTT
+    private static MqttClient myMqtt;
 
     //Shortcut für Host und port
     private static final String myWorkingBroker = "tcp://localhost:1883";
@@ -34,21 +39,44 @@ class MyProgram implements MqttCallback {
     //Allgemeine Shutdown-flag
     private boolean shutdownFlag = false;
 
+    //ID des Programms
+    private static String thisWorkerId;
 
-    //Erstellen der Klasse für einen MQTT
-    private MqttClient myMqtt;
+    //Variable für den UserInput
+    private static int userInput = 0;
+
 
     //Vordefinierte Topics für die Worker und die resultate/darts
-//    private static final String dartPackageTopic = "ais/coordinator/dartpackage/";
+    private static final String shutdownTopic = "shutdown";
 //    private static final String dartResultTopic = "ais/coordinator/results/";
 //    private static final String workerDirectTopic = "ais/worker/mailbox/";
 
 
-    //Nur für den Coordinator, der Pacemaker kontrolliert standartmäßig die Shutdownfläg und schläft im takt
-    public void paceMaker() {
+    //Construktor
+    public MyProgram(String id, int userinput, MqttClient mqtt) {
+        thisWorkerId = id;
+        userInput = userinput;
+        myMqtt = mqtt;
+    }
+
+    public void connect() throws MqttException {
+
+        //verbinden mit dem angegebenen Pfad ->
+        //setzen der Callback methode ->
+        myMqtt.connect();
+        myMqtt.setCallback(this);
+
+        //-------------------Subscriben bei den Topics
+        //registrieren der einzelnen Topics beim broker -> nur die coordinator Topics
+//        myMqtt.subscribe(dartPackageTopic);
+//        myMqtt.subscribe(dartResultTopic + "+");
+    }
+
+    //paceMaker == doWork
+    public void paceMaker() throws MqttException {
         //solange die shutdownflag nicht gesetzt ist in einer endlosschleife pausen einbauen (lauftakt)
-        System.out.println("Hello PACEMAKER!");
         while (!shutdownFlag) {
+            System.out.println("Hello PACEMAKER!");
             try {
                 sleep(500);
             } catch (InterruptedException e) {
@@ -57,19 +85,6 @@ class MyProgram implements MqttCallback {
         }
     }
 
-    public void connect(String source) throws MqttException {
-        //Erstellen des MqttClients mit new ->
-        //setzen des zielpfades (bei uns jetzt localhost und port 1883, inkl eindeutige ID für den Client ->
-        //verbinden mit dem angegebenen Pfad ->
-        //setzen der Callback methode ->
-        myMqtt = new MqttClient(source, UUID.randomUUID().toString());
-        myMqtt.connect();
-        myMqtt.setCallback(this);
-        //-------------------Subscriben bei den Topics
-        //registrieren der einzelnen Topics beim broker -> nur die coordinator Topics
-//        myMqtt.subscribe(dartPackageTopic);
-//        myMqtt.subscribe(dartResultTopic + "+");
-    }
 
     public void disconnect() throws MqttException {
         myMqtt.disconnect();
@@ -78,53 +93,13 @@ class MyProgram implements MqttCallback {
 
     //------------------------------------in Message Arrived findet zumeist dann die Arbeit statt
 
-    public static void main(String[] args) {
-
-        // Überprüfe, ob genau ein Argument übergeben wurde
-        if (args.length != 1) {
-            System.out.println("Bitte geben Sie genau eine Zahl als Argument ein.");
-            return; // Beende das Programm, da die Anzahl der Argumente nicht korrekt ist
-        }
-
-        // Versuche, das Argument in eine Zahl umzuwandeln
-        try {
-            int userInput = Integer.parseInt(args[0]);
-            System.out.println("Die eingegebene Zahl ist: " + userInput);
-            try {
-
-
-                //Erstelle hier mit constructor das programm
-                MyProgram thisProgram = new MyProgram();
-
-                //Verbinden mit dem Broker, in diesem Fall Localhost und Port 1883->unverschlüsselt
-                thisProgram.connect(myWorkingBroker);
-
-                //Pacemaker für den Coordinator oder die Basis
-                //thisProgram.paceMaker();
-
-                //Für einen Worker z.b.: thisProgram.doMyWork();
-
-
-                //Beenden der Verbindung
-                Thread.sleep(2000);
-                thisProgram.disconnect();
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            //Catchblock für den Check mit den Eingabeparametern
-        } catch (NumberFormatException n) {
-            System.out.println("Das Argument muss eine gültige Ganzzahl sein.");
-        }
-
-
-    }
-
 
 
     @Override
-    public void messageArrived(String s, MqttMessage mqttMessage) throws Exception {
-
+    public void messageArrived(String topic, MqttMessage mqttMessage) throws Exception {
+        if (topic.equals(shutdownTopic) && mqttMessage.toString().equals("quit")) {
+            shutdownFlag = true;
+        }
 
         //Put your work here.----------------
 
@@ -142,5 +117,48 @@ class MyProgram implements MqttCallback {
     @Override
     public void deliveryComplete(IMqttDeliveryToken iMqttDeliveryToken) {
         System.out.println("Lieferung wurde completed!");
+    }
+
+    public static void main(String[] args) {
+
+        // Überprüfe, ob genau ein Argument übergeben wurde
+        if (args.length != 1) {
+            System.out.println("Bitte geben Sie genau eine Zahl als Argument ein.");
+            return; // Beende das Programm, da die Anzahl der Argumente nicht korrekt ist
+        }
+
+        // Versuche, das Argument in eine Zahl umzuwandeln
+        try {
+            userInput = Integer.parseInt(args[0]);
+            System.out.println("Die eingegebene Zahl ist: " + userInput);
+            thisWorkerId = UUID.randomUUID().toString();
+            try {
+                myMqtt = new MqttClient(myWorkingBroker, thisWorkerId);
+
+                //Erstelle hier mit constructor das programm
+                MyProgram thisProgram = new MyProgram(thisWorkerId, userInput, myMqtt);
+
+                //Verbinden mit dem Broker, in diesem Fall Localhost und Port 1883->unverschlüsselt
+                thisProgram.connect();
+
+                //Hier findet die Arbeit statt
+                thisProgram.paceMaker();
+
+                //Für einen Worker z.b.: thisProgram.doMyWork();
+
+
+                //Beenden der Verbindung
+                Thread.sleep(2000);
+                thisProgram.disconnect();
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            //Catchblock für den Check mit den Eingabeparametern
+        } catch (NumberFormatException n) {
+            System.out.println("Das Argument muss eine gültige Ganzzahl sein.");
+        }
+
+
     }
 }
